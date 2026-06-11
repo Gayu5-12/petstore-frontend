@@ -25,19 +25,19 @@ function Admin() {
   const fetchData = async () => {
     try {
       const usersRes = await axios.get(
-        "http://localhost:5000/api/admin/users"
+        "http://https://petstore-backend-2.onrender.com/api/admin/users"
       );
 
       const petsRes = await axios.get(
-        "http://localhost:5000/api/admin/pets"
+        "http://https://petstore-backend-2.onrender.com/api/admin/pets"
       );
 
       const adoptionsRes = await axios.get(
-        "http://localhost:5000/api/admin/adoptions"
+        "http://https://petstore-backend-2.onrender.com/api/admin/adoptions"
       );
 
       const sellsRes = await axios.get(
-        "http://localhost:5000/api/admin/sells"
+        "http://https://petstore-backend-2.onrender.com/api/admin/sells"
       );
 
       setUsers(usersRes.data);
@@ -59,7 +59,7 @@ function Admin() {
     if (!confirmDelete) return;
 
     await axios.delete(
-      `http://localhost:5000/api/admin/pets/${id}`
+      `http://https://petstore-backend-2.onrender.com/api/admin/pets/${id}`
     );
 
     fetchData();
