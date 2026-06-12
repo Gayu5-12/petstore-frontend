@@ -1,74 +1,62 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
 import "../styles/Admin.css";
 
 function Admin() {
   const navigate = useNavigate();
 
-  const [users, setUsers] = useState([]);
-  const [pets, setPets] = useState([]);
-  const [adoptions, setAdoptions] = useState([]);
-  const [sells, setSells] = useState([]);
+  const [users] = useState([
+    { _id: "u1", name: "Arun Kumar",    email: "arun.kumar@gmail.com" },
+    { _id: "u2", name: "Priya Sharma",  email: "priya.sharma@gmail.com" },
+    { _id: "u3", name: "Rahul Menon",   email: "rahul.menon@gmail.com" },
+    { _id: "u4", name: "Divya Nair",    email: "divya.nair@gmail.com" },
+  ]);
 
-  useEffect(() => {
-    const isAdmin = localStorage.getItem("isAdmin") === "true";
+  const [pets, setPets] = useState([
+    { _id: "p1", name: "Biscuit",  breed: "Golden Retriever", category: "Dog",  image: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100" },
+    { _id: "p2", name: "Milo",     breed: "Pug",             category: "Dog",  image: "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=100" },
+    { _id: "p3", name: "Whiskers", breed: "Persian",         category: "Cat",  image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100" },
+    { _id: "p4", name: "Luna",     breed: "Siamese",         category: "Cat",  image: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=100" },
+    { _id: "p5", name: "Oliver",   breed: "African Grey",    category: "Bird", image: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=100" },
+    { _id: "p6", name: "Bruno",    breed: "German Shepherd", category: "Dog",  image: "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=100" },
+  ]);
 
-    if (!isAdmin) {
-      navigate("/");
+  const [adoptions] = useState([
+    { _id: "a1", userName: "Arun Kumar",  email: "arun.kumar@gmail.com",  status: "pending" },
+    { _id: "a2", userName: "Priya Sharma", email: "priya.sharma@gmail.com", status: "pending" },
+    { _id: "a3", userName: "Rahul Menon",  email: "rahul.menon@gmail.com",  status: "pending" },
+  ]);
+
+  const [sells] = useState([
+    { _id: "s1", petName: "Coco",   ownerName: "Meera Krishnan", status: "pending" },
+    { _id: "s2", petName: "Shadow", ownerName: "Karthik Raja",   status: "pending" },
+    { _id: "s3", petName: "Mango",  ownerName: "Vijay Anand",    status: "pending" },
+  ]);
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newPet, setNewPet] = useState({ name: "", breed: "", category: "Dog", image: "" });
+
+  const handleAddPet = () => {
+    if (!newPet.name.trim() || !newPet.breed.trim()) {
+      alert("Name and Breed are required.");
       return;
     }
-
-    fetchData();
-  }, [navigate]);
-
-  const fetchData = async () => {
-    try {
-      const usersRes = await axios.get(
-        "http://https://petstore-backend-2.onrender.com/api/admin/users"
-      );
-
-      const petsRes = await axios.get(
-        "http://https://petstore-backend-2.onrender.com/api/admin/pets"
-      );
-
-      const adoptionsRes = await axios.get(
-        "http://https://petstore-backend-2.onrender.com/api/admin/adoptions"
-      );
-
-      const sellsRes = await axios.get(
-        "http://https://petstore-backend-2.onrender.com/api/admin/sells"
-      );
-
-      setUsers(usersRes.data);
-      setPets(petsRes.data);
-      setAdoptions(adoptionsRes.data);
-      setSells(sellsRes.data);
-    } catch (err) {
-      console.log(err);
-    }
+    const id = "p" + Date.now();
+    const image = newPet.image.trim() ||
+      (newPet.category === "Dog"  ? "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100" :
+       newPet.category === "Cat"  ? "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100" :
+                                    "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=100");
+    setPets((prev) => [...prev, { _id: id, ...newPet, image }]);
+    setNewPet({ name: "", breed: "", category: "Dog", image: "" });
+    setShowAddForm(false);
   };
 
   const revenue = sells.length * 2500;
-      const handleDeletePet = async (id) => {
-  try {
-    const confirmDelete = window.confirm(
-      "Delete this pet?"
-    );
 
-    if (!confirmDelete) return;
-
-    await axios.delete(
-      `http://https://petstore-backend-2.onrender.com/api/admin/pets/${id}`
-    );
-
-    fetchData();
-
-    alert("Pet deleted successfully");
-  } catch (error) {
-    console.log(error);
-  }
-};
+  const handleDeletePet = (id) => {
+    if (!window.confirm("Delete this pet?")) return;
+    setPets((prev) => prev.filter((pet) => pet._id !== id));
+  };
   return (
     <div className="admin-page">
       <div className="container py-4">
@@ -133,11 +121,65 @@ function Admin() {
         {/* QUICK ACTIONS */}
 
         <div className="quick-actions">
-          <button>➕ Add Pet</button>
+          <button onClick={() => setShowAddForm(true)}>➕ Add Pet</button>
           <button>📊 Reports</button>
           <button>👥 Users</button>
           <button>⚙ Settings</button>
         </div>
+
+        {/* ADD PET MODAL */}
+
+        {showAddForm && (
+          <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
+            <div style={{ background:"#fff", borderRadius:"12px", padding:"32px", width:"100%", maxWidth:"420px", boxShadow:"0 8px 32px rgba(0,0,0,0.2)" }}>
+              <h3 style={{ marginBottom:"20px" }}>➕ Add New Pet</h3>
+
+              <input
+                type="text"
+                placeholder="Pet Name *"
+                className="search-input"
+                style={{ width:"100%", marginBottom:"12px", display:"block" }}
+                value={newPet.name}
+                onChange={(e) => setNewPet({ ...newPet, name: e.target.value })}
+              />
+
+              <input
+                type="text"
+                placeholder="Breed *"
+                className="search-input"
+                style={{ width:"100%", marginBottom:"12px", display:"block" }}
+                value={newPet.breed}
+                onChange={(e) => setNewPet({ ...newPet, breed: e.target.value })}
+              />
+
+              <select
+                className="search-input"
+                style={{ width:"100%", marginBottom:"12px", display:"block" }}
+                value={newPet.category}
+                onChange={(e) => setNewPet({ ...newPet, category: e.target.value })}
+              >
+                <option value="Dog">Dog</option>
+                <option value="Cat">Cat</option>
+                <option value="Bird">Bird</option>
+                <option value="Other">Other</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="Image URL (optional)"
+                className="search-input"
+                style={{ width:"100%", marginBottom:"20px", display:"block" }}
+                value={newPet.image}
+                onChange={(e) => setNewPet({ ...newPet, image: e.target.value })}
+              />
+
+              <div style={{ display:"flex", gap:"10px" }}>
+                <button className="approve-btn" onClick={handleAddPet}>Add Pet</button>
+                <button className="reject-btn" onClick={() => { setShowAddForm(false); setNewPet({ name:"", breed:"", category:"Dog", image:"" }); }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* OVERVIEW */}
 
