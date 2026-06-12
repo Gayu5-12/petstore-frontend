@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
 import "../styles/Adopt.css";
 
 const PETS = [
@@ -70,7 +71,7 @@ export default function Adopt() {
     setShowAppointmentModal(true);
   };
 
-  const handleBookAppointment = () => {
+  const handleBookAppointment = async () => {
     if (!selectedPet) return;
     if (!appointmentForm.name || !appointmentForm.email || !appointmentForm.phone || !appointmentForm.date || !appointmentForm.time || !appointmentForm.location) {
       alert("Please populate all authorization parameters.");
@@ -87,6 +88,18 @@ export default function Adopt() {
       location: appointmentForm.location,
       visited: false
     };
+
+    try {
+      await api.post("/adoptions", {
+        userName: appointmentForm.name,
+        email: appointmentForm.email,
+        phone: appointmentForm.phone,
+        petId: selectedPet._id || selectedPet.id,
+        status: "pending",
+      });
+    } catch (err) {
+      // backend offline — still record locally
+    }
 
     setAppointments([newAppointment, ...appointments]);
     alert(`🎉 Appointment Reserved!\nTicket ID: ${newAppointment.id}\nLocation: ${newAppointment.location}`);

@@ -305,6 +305,19 @@ tbody tr:hover {
   color: var(--muted);
 }
 
+.delete-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  opacity: 0.9;
+}
+
 /* SCROLLBAR */
 
 ::-webkit-scrollbar {

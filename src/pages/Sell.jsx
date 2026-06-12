@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import '../styles/Sell.css';
+import api from '../api/axios';
 
 const Sell = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -59,15 +60,29 @@ const Sell = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleSubmission = (e) => {
+  const handleSubmission = async (e) => {
     e.preventDefault();
     if (!formData.agreeTerms) {
       alert("Please agree to the terms and conditions to continue.");
       return;
     }
 
-    alert("✅ Your pet listing has been submitted successfully!\n\nOur team will review your application within 24-48 hours and contact you with next steps. Thank you for choosing PetPaws Shop!");
-    
+    try {
+      await api.post("/sells", {
+        ownerName: formData.sellerName,
+        email: formData.email,
+        petName: formData.petName,
+        breed: formData.breed,
+        age: formData.age,
+        price: formData.price,
+        status: "pending",
+      });
+      alert("✅ Your pet listing has been submitted successfully!\n\nOur team will review your application within 24-48 hours and contact you with next steps. Thank you for choosing PetPaws Shop!");
+    } catch (err) {
+      alert("Submission failed. Please try again.");
+      return;
+    }
+
     setCurrentStep(1);
     setFormData({
       petName: '',

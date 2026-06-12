@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import api from "../api/axios";
 import "../styles/Admin.css";
 
 function Admin() {
   const navigate = useNavigate();
 
-  const [users] = useState([
+  const [users, setUsers] = useState([
     { _id: "u1", name: "Arun Kumar",    email: "arun.kumar@gmail.com" },
     { _id: "u2", name: "Priya Sharma",  email: "priya.sharma@gmail.com" },
     { _id: "u3", name: "Rahul Menon",   email: "rahul.menon@gmail.com" },
@@ -21,17 +22,50 @@ function Admin() {
     { _id: "p6", name: "Bruno",    breed: "German Shepherd", category: "Dog",  image: "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=100" },
   ]);
 
-  const [adoptions] = useState([
+  const [adoptions, setAdoptions] = useState([
     { _id: "a1", userName: "Arun Kumar",  email: "arun.kumar@gmail.com",  status: "pending" },
     { _id: "a2", userName: "Priya Sharma", email: "priya.sharma@gmail.com", status: "pending" },
     { _id: "a3", userName: "Rahul Menon",  email: "rahul.menon@gmail.com",  status: "pending" },
   ]);
 
-  const [sells] = useState([
+  const [sells, setSells] = useState([
     { _id: "s1", petName: "Coco",   ownerName: "Meera Krishnan", status: "pending" },
     { _id: "s2", petName: "Shadow", ownerName: "Karthik Raja",   status: "pending" },
     { _id: "s3", petName: "Mango",  ownerName: "Vijay Anand",    status: "pending" },
   ]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    Promise.all([
+      api.get("/admin/users",     { headers }),
+      api.get("/admin/pets",      { headers }),
+      api.get("/admin/adoptions", { headers }),
+      api.get("/admin/sells",     { headers }),
+    ])
+      .then(([u, p, a, s]) => {
+        if (u.data?.length) setUsers(u.data);
+        if (p.data?.length) setPets(p.data);
+        if (a.data?.length) setAdoptions(a.data);
+        if (s.data?.length) setSells(s.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleAdoptionStatus = (id, status) => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+    setAdoptions((prev) => prev.map((a) => a._id === id ? { ...a, status } : a));
+    api.put(`/admin/adoptions/${id}`, { status }, { headers }).catch(() => {});
+  };
+
+  const handleSellStatus = (id, status) => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+    setSells((prev) => prev.map((s) => s._id === id ? { ...s, status } : s));
+    api.put(`/admin/sells/${id}`, { status }, { headers }).catch(() => {});
+  };
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newPet, setNewPet] = useState({ name: "", breed: "", category: "Dog", image: "" });
@@ -130,7 +164,7 @@ function Admin() {
         {/* ADD PET MODAL */}
 
         {showAddForm && (
-          <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
+          <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:99999 }}>
             <div style={{ background:"#fff", borderRadius:"12px", padding:"32px", width:"100%", maxWidth:"420px", boxShadow:"0 8px 32px rgba(0,0,0,0.2)" }}>
               <h3 style={{ marginBottom:"20px" }}>➕ Add New Pet</h3>
 
@@ -333,11 +367,11 @@ function Admin() {
                   <td>{item.status}</td>
 
                   <td>
-                    <button className="approve-btn">
+                    <button className="approve-btn" onClick={() => handleAdoptionStatus(item._id, "approved")}>
                       Approve
                     </button>
 
-                    <button className="reject-btn">
+                    <button className="reject-btn" onClick={() => handleAdoptionStatus(item._id, "rejected")}>
                       Reject
                     </button>
                   </td>
@@ -370,11 +404,11 @@ function Admin() {
                   <td>{item.status}</td>
 
                   <td>
-                    <button className="approve-btn">
+                    <button className="approve-btn" onClick={() => handleSellStatus(item._id, "approved")}>
                       Approve
                     </button>
 
-                    <button className="reject-btn">
+                    <button className="reject-btn" onClick={() => handleSellStatus(item._id, "rejected")}>
                       Reject
                     </button>
                   </td>
